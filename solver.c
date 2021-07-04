@@ -2,27 +2,53 @@
 
 int main(int argc, char **argv){
     int *grid = parse_file(argv[1]);
+    int result = solve(&grid);
+    //printf("%d:%d\n", grid[17],is_valid(grid,17));
+    printf("Result: %s\n", result ? "Success" : "Fail");
+    print_grid(grid);
+
     free(grid);
     return 0;
 }
 
 int solve(int **grid){
     int *known = find_known(*grid);
+    // print_grid(known);
+    // printf("\n");
     int row = 0;
     int col = 0;
     int i = 0;
+    int go_back = false;
     
     while (i >= 0 && i < 81){
         if (!known[i]){
             // It is not a preset value
+            while (!is_valid(*grid, i) && (*grid)[i] <= 9){
+                (*grid)[i]++;
+                //printf("%d", (*grid)[i]);
+            }
+            if ((*grid)[i] > 9){
+                // Could not find a valid value, so go back to previous cell
+                (*grid)[i] = 0;
+                go_back = true;
+            } else {
+
+                go_back = false;
+            }
+            usleep(10000);
 
         }
+        i += go_back ? -1 : 1;
     }
     free(known);
+    return i == 81;
 }
 
 int is_valid(int *grid, int k){
     int num = grid[k];
+    if (num == 0){
+        return false;
+    }
     // Checking row
     int row = k / 9;
     for (int i = 0; i < 9; i++){
