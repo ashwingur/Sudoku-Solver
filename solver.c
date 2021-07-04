@@ -2,10 +2,62 @@
 
 int main(int argc, char **argv){
     int *grid = parse_file(argv[1]);
-    int *known = find_known(grid);
     free(grid);
-    free(known);
     return 0;
+}
+
+int solve(int **grid){
+    int *known = find_known(*grid);
+    int row = 0;
+    int col = 0;
+    int i = 0;
+    
+    while (i >= 0 && i < 81){
+        if (!known[i]){
+            // It is not a preset value
+
+        }
+    }
+    free(known);
+}
+
+int is_valid(int *grid, int k){
+    int num = grid[k];
+    // Checking row
+    int row = k / 9;
+    for (int i = 0; i < 9; i++){
+        if (grid[row * 9 + i] == num){
+            if (row * 9 + i != k){
+                return false;
+            }
+        }
+    }
+
+    // Checking column
+    int col = k % 9;
+    for (int i = 0; i < 9; i++){
+        if (grid[9 * i + col] == num){
+            if (9 * i + col != k){
+                return false;
+            }
+        }
+    }
+
+    // Checking the number's corresponding 3x3 box
+    int box_row = (row / 3) * 3;
+    int box_col = (col / 3) * 3;
+
+    for (int i = 0; i < 3; i++){
+        for (int j = 0; j < 3; j++){
+            if (grid[(box_row + i) * 9 + box_col + j] == num){
+                if ((box_row + i) * 9 + box_col + j != k){
+                    return false;
+                }
+            }
+        }
+    }
+
+    return true;
 }
 
 
@@ -42,4 +94,5 @@ int *find_known(int *grid){
             known[i] = true;
         }
     }
+    return known;
 }
