@@ -1,10 +1,14 @@
 #include "solver.h"
 
 int main(int argc, char **argv){
+    if (argc != 2){
+        printf("Usage ./solver <puzzle.txt>\n");
+        return -1;
+    }
     int *grid = parse_file(argv[1]);
     int result = solve(&grid);
-    //printf("%d:%d\n", grid[17],is_valid(grid,17));
-    printf("Result: %s\n", result ? "Success" : "Fail");
+    printf("Result: %s\n", result != -1 ? "Success" : "Fail");
+    printf("Iterations: %d\n\n", result);
     print_grid(grid);
 
     free(grid);
@@ -13,42 +17,51 @@ int main(int argc, char **argv){
 
 int solve(int **grid){
     int *known = find_known(*grid);
-    // print_grid(known);
-    // printf("\n");
+    int *visited =  calloc(81 , sizeof(int));
     int row = 0;
     int col = 0;
     int i = 0;
     int go_back = false;
+    int iterations = 0;
     
     while (i >= 0 && i < 81){
+        iterations++;
+        if (visited[i]){
+            // We have back tracked onto this cell, so we must try a new value
+            visited[i] = false;
+            (*grid)[i]++;
+        }
         if (!known[i]){
             // It is not a preset value
-            while (!is_valid(*grid, i) && (*grid)[i] <= 9){
+
+            if ((*grid)[i] == 0){
+                // A zero is an empty cell, so increment it to a valid value
                 (*grid)[i]++;
-                //printf("%d", (*grid)[i]);
+            }
+            while (!is_valid(*grid, i) && (*grid)[i] <= 9){
+                // While this cell is invalid, increment it
+                (*grid)[i]++;
             }
             if ((*grid)[i] > 9){
                 // Could not find a valid value, so go back to previous cell
                 (*grid)[i] = 0;
                 go_back = true;
             } else {
-
+                // Set visited to true and go to the next cell
                 go_back = false;
+                visited[i] = true;
             }
-            usleep(10000);
-
         }
         i += go_back ? -1 : 1;
     }
     free(known);
-    return i == 81;
+    free(visited);
+    // i will be 81 if it successfully solves the grid
+    return i == 81 ? iterations : -1;
 }
 
 int is_valid(int *grid, int k){
     int num = grid[k];
-    if (num == 0){
-        return false;
-    }
     // Checking row
     int row = k / 9;
     for (int i = 0; i < 9; i++){
